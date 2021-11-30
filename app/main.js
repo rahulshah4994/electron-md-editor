@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, shell } = require("electron");
 const fs = require("fs");
 const path = require("path");
 
@@ -58,4 +58,12 @@ ipcMain.handle("read-file", (event, filePath) => {
 	const content = fs.readFileSync(filePath).toString();
 
 	return { file, content };
+});
+
+ipcMain.on("show-in-folder", (event, filePath) => {
+	shell.showItemInFolder(filePath);
+});
+
+ipcMain.on("open-in-default-app", (event, filePath) => {
+	shell.openPath(filePath);
 });

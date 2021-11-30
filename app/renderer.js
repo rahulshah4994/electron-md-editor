@@ -2,7 +2,6 @@ let lastSavedContent = "";
 let currentContent = "";
 let loadedFilePath = null;
 let loadedFileName = null;
-let savedHtmlPath = null;
 
 const markdownView = document.querySelector("#markdown");
 const htmlView = document.querySelector("#html");
@@ -88,13 +87,9 @@ saveMarkdownButton.addEventListener("click", async () => {
 });
 
 saveHtmlButton.addEventListener("click", async () => {
-	const data = await window.electron.saveFile(
-		savedHtmlPath,
-		htmlView.innerHTML
-	);
+	const data = await window.electron.saveFile(null, htmlView.innerHTML);
 	if (data) {
 		const { file, filePath } = data;
-		savedHtmlPath = filePath;
 		loadedFileName = file;
 		lastSavedContent = currentContent;
 		updateUI();
@@ -114,14 +109,41 @@ openFileButton.addEventListener("click", async () => {
 	openFile(filePath);
 });
 
+showFileButton.addEventListener("click", () => {
+	if (loadedFilePath) {
+		window.electron.showInFolder(loadedFilePath);
+	}
+});
+
+openInDefaultButton.addEventListener("click", () => {
+	if (loadedFilePath) {
+		window.electron.openInDefaultApp(loadedFilePath);
+	}
+});
+
+newFileButton.addEventListener("click", () => {
+	loadedFilePath = null;
+	loadedFileName = "";
+	lastSavedContent = "";
+	currentContent = "";
+	markdownView.value = "";
+	renderMarkdownToHtml("");
+	updateUI();
+});
+
 const openFile = async (filePath) => {
 	const { file, content } = await window.electron.readFile(filePath);
 
 	loadedFilePath = filePath;
 	loadedFileName = file;
+
+	showFileButton.disabled = false;
+	openInDefaultButton.disabled = false;
+
 	lastSavedContent = content;
 	currentContent = content;
 	markdownView.value = content;
 	renderMarkdownToHtml(content);
+
 	updateUI();
 };
